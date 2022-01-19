@@ -20,11 +20,7 @@ namespace Phlatware
 
         internal Snapshot<T> CreateSnapshot(T model) 
         {
-            var options = new SnapshotOptions
-            {
-                BindingFlags = BindingFlags
-            };
-            return new Snapshot<T>(model, options);
+            return new Snapshot<T>(model);
         }
         public BindingFlags BindingFlags { get; set; } = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
