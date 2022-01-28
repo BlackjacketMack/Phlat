@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Phlatware.Tests
 {
@@ -130,6 +131,7 @@ namespace Phlatware.Tests
 
             Assert.AreEqual(4, result.Count);
             Assert.IsTrue(result.TrueForAll(m=>m.State == ResultStates.Created));
+            Assert.IsTrue(result.First().Values.ContainsKey(nameof(Foo.Id)));
         }
 
         [TestMethod]
@@ -164,11 +166,15 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestModify_DeepInsert()
         {
-            _foo2.Bazzes.Add(new Baz { Name = "The new Baz on the block." });
+            var newBaz = new Baz { Name = "The new Baz on the block." };
 
-            var result = _target.Modify(_foo2, _foo1);
+            _foo2.Bazzes.Add(newBaz);
 
-            Console.WriteLine(result.ToString());
+            var results = _target.Modify(_foo2, _foo1);
+            Console.WriteLine(results);
+
+            var newResult = results.Where(w => Object.ReferenceEquals(w.Model, newBaz)).Single();
+            Assert.AreEqual(ResultStates.Created,newResult.State);
         }
 
         [TestMethod]

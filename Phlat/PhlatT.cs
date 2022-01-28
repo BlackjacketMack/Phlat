@@ -69,7 +69,7 @@ namespace Phlatware
         {
             if (leftModel == null) throw new ArgumentNullException(nameof(leftModel));
 
-            var results = Flatten(leftModel);
+            var results = Flatten(leftModel, includeValues:true);
 
             foreach(var result in results)
             {
@@ -124,13 +124,13 @@ namespace Phlatware
 
                     itemConfig.Update(leftResult.Model, rightResult.Model);
 
+                    changes = snapshot.Changes();
                     rightResult.Values = startValues;
-                    rightResult.Changes = snapshot.Changes();
+                    rightResult.Changes = changes;
+
+                    if (changes.Any())
+                        rightResult.State = ResultStates.Updated;
                 }
-
-                rightResult.State = leftResult.State;
-
-                handleState(leftResult, rightResult);
 
                 returnResults.Add(rightResult);
             }
@@ -157,36 +157,6 @@ namespace Phlatware
             }
 
             return returnResults;
-        }
-
-        private void handleState(Result<T> leftResult, Result<T> rightResult)
-        {
-            //changes are determined by the rightresult(the return result)
-            var changesExist = rightResult.Changes?.Any() ?? false;
-
-            //copy modelstate
-            if (rightResult.State == ResultStates.Deleted)
-            {
-                //don't do diddly
-            }
-            //insert
-            else if (rightResult.Model == null)
-            {
-                rightResult.State = ResultStates.Created;
-            }
-            //update
-            else if (changesExist)
-            {
-                rightResult.State = ResultStates.Updated;
-            }
-            //no change
-            else
-            {
-                rightResult.State = ResultStates.Unchanged;
-            }
-
-            //the left result should mirror the modelstates we've set on the right result
-            leftResult.State = rightResult.State;
         }
     }
 }

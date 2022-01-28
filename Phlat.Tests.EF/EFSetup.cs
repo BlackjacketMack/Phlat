@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Phlatware.Tests.EF
 {
@@ -13,9 +14,11 @@ namespace Phlatware.Tests.EF
 
             using (var dbContext = new BloggingContext())
             {
-                dbContext.Blogs.AddRange(new[] { blog });
-
-                dbContext.SaveChanges();
+                if (!dbContext.Blogs.Any())
+                {
+                    dbContext.Blogs.AddRange(new[] { blog });
+                    dbContext.SaveChanges();
+                }
             }
         }
 
