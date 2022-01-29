@@ -158,9 +158,12 @@ namespace Phlatware.Tests
         {
             _foo2.Bazzes[1].Name = "Baz-a WAS thy name...from henceforth you shall be known as Bazzle.";
 
-            var result = _target.Modify(_foo2, _foo1);
+            var results = _target.Modify(_foo2, _foo1);
+            Console.WriteLine(results.ToString());
 
-            Console.WriteLine(result.ToString());
+            var result = results.Single(r => r.Model == _foo1.Bazzes[1]);
+            Assert.AreEqual(ResultStates.Updated,result.State);
+            Assert.AreEqual("Baz-a WAS thy name...from henceforth you shall be known as Bazzle.",((Baz)result.Model).Name);
         }
 
         [TestMethod]
@@ -204,27 +207,14 @@ namespace Phlatware.Tests
         }
 
         [TestMethod]
-        public void TestModify_CustomEqualityByName()
+        public void TestConfiguration_ValueDictionaryIsInvariantCultureIgnoreCase()
         {
-            //_config = new PhlatConfiguration<Foo>()
-            //                       .AddRootDefinition((s, t) =>
-            //                       {
-            //                           t.Description = s.Description;
-            //                       },
-            //                       comparer: new CustomComparerByName());
+            //change the default from case-insensitive to case-sensitive
+            var target = new Phlat(_config);
 
+            var results = target.Flatten(_foo1, includeValues: true);
 
-            ////remove one from our target.  foo2 will have an extra one that should be marked as deleted.
-            //_foo2.Id = 9999; //set id so it wouldn't match
-            //_foo2.Name = _foo1.Name;    //these have to match
-            //_foo2.Description = "Some new description";
-
-            //var result = Phlat.Modify(_foo2, _foo1, _config);
-
-            //Console.WriteLine(result.ToString());
-
-            //Assert.AreEqual(ResultStates.Updated, result[0].State);
-            //Assert.IsTrue(result[0].Changes.ContainsKey(nameof(_foo2.Description)));
+            Assert.IsTrue(results.RootResult.Values.ContainsKey("id"));
         }
     }
 }

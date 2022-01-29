@@ -66,5 +66,20 @@ namespace Phlatware.Tests
             Assert.IsFalse(changes.ContainsKey(nameof(Foo.Id)));
             Assert.AreEqual("Terry Jeffords", changes[nameof(foo.Name)]);
         }
+
+        [TestMethod]
+        public void TestSnapshotOptions_DictionaryStringComparer_DefaultInvariantCultureIgnoreCase()
+        {
+            var foo = new Foo
+            {
+                Id = 1,
+                Name = "Jake Peralta"
+            };
+
+            var snapshot = new Snapshot<Foo>(foo);
+            var values = snapshot.Values();
+
+            Assert.IsTrue(values.ContainsKey("id"));
+        }
     }
 }

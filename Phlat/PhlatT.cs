@@ -6,24 +6,13 @@ namespace Phlatware
 {
     internal class Phlat<T> : Phlat
     {
-        private readonly PhlatType<T> _rootType;
         private readonly PhlatConfiguration _configuration;
 
-        private IDictionary<Type, IPhlatType> _registry => _configuration.Registry;
-
-        private IPhlatType getType(Type type)
-        {
-            if (!_registry.TryGetValue(type, out IPhlatType val))
-                throw new ApplicationException("The type you specified is not registerd.");
-
-            return val;
-        }
+        private T _root;
 
         public Phlat(PhlatConfiguration configuration) : base(configuration)
         {
             _configuration = configuration;
-
-            _rootType = getType(typeof(T)) as PhlatType<T>;
         }
 
         /// <summary>
@@ -33,32 +22,60 @@ namespace Phlatware
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
 
+            _root = model;
+
+            var results = flatten(model, includeValues);
+
+            return results;
+        }
+
+        /// <summary>
+        /// <see cref="Phlat.Flatten" />
+        /// </summary>
+        private ResultList<T> flatten(
+                object model, 
+                bool includeValues = false, 
+                object parent = null, 
+                IPath parentPath = null)
+        {
+            if (model == null) throw new ArgumentNullException(nameof(model));
+
             var results = new ResultList<T>();
 
-            foreach (var definition in _rootType.Definitions)
-            {
-                _registry.TryGetValue(definition.Type, out IPhlatType itemConfig);
+            var type = _configuration.GetPhlatType(model.GetType());
 
-                var dataModels = definition.Get(model);
+            if (type == null)
+                throw new ApplicationException($"A phlattype is not configured for model type {model.GetType()}");
+
+            var snapshot = type.CreateSnapshot(model);
+
+            var values = includeValues ? snapshot.Values() : null;
+
+            var result = new Result<T>
+            {
+                Root = _root,
+                Parent = parent,
+                Model = model,
+                Path = parentPath,                    //how it got here
+                Values = values,
+                Changes = null
+            };
+
+            results.Add(result);
+
+            foreach (var path in type.Paths)
+            {
+                var dataModels = path.Get(model);
 
                 if (dataModels == null) continue;
 
                 foreach (var dataModel in dataModels)
                 {
-                    var snapshot = itemConfig.CreateSnapshot(dataModel);
-
-                    var values = includeValues ? snapshot.Values() : null;
-
-                    var result = new Result<T>
-                    {
-                        Root = model,
-                        Model = dataModel,
-                        Definition = definition,
-                        Values = values,
-                        Changes = null
-                    };
-
-                    results.Add(result);
+                    var nestedResults = flatten(dataModel, 
+                                                includeValues: includeValues, 
+                                                parent: model,
+                                                parentPath: path);
+                    results.AddRange(nestedResults);
                 }
             }
 
@@ -79,73 +96,82 @@ namespace Phlatware
             return results;
         }
         
-        public ResultList<T> Modify(T leftModel, T rightModel)
+        public ResultList<T> Modify(T sourceModel, T targetModel)
         {
-            if (leftModel == null) throw new ArgumentNullException(nameof(leftModel));
-            if (rightModel == null) throw new ArgumentNullException(nameof(rightModel));
-            if (Object.ReferenceEquals(leftModel, rightModel)) throw new ArgumentException("Left and right models are equal.");
+            if (sourceModel == null) throw new ArgumentNullException(nameof(sourceModel));
+            if (targetModel == null) throw new ArgumentNullException(nameof(targetModel));
+            if (Object.ReferenceEquals(sourceModel, targetModel)) throw new ArgumentException("Left and right models are equal.");
             
-            var leftResults = Flatten(leftModel);
-            var rightResults = Flatten(rightModel);
+            var sourceResults = Flatten(sourceModel);
+            var targetResults = Flatten(targetModel);
             var returnResults = new ResultList<T>();
 
-            foreach (var leftResult in leftResults)
+            foreach (var sourceResult in sourceResults)
             {
-                var definition = leftResult.Definition;
+                var path = sourceResult.Path;
 
-                _registry.TryGetValue(definition.Type, out IPhlatType itemConfig);
+                var sourcePhlatType = _configuration.GetPhlatType(sourceResult.Type);
 
                 //this will be our return result
-                var rightResult = rightResults.Where(rr => Object.Equals(leftResult.Model, rr.Model)).SingleOrDefault();
+                var targetResult = targetResults.Where(rr => Object.Equals(sourceResult.Model, rr.Model)).SingleOrDefault();
 
                 IDictionary<string, object> changes = new Dictionary<string, object>();
 
                 //insert
-                if (rightResult == null)
+                if (targetResult == null)
                 {
-                    definition.Insert(rightModel, leftResult.Model);
+                    //find the parent by ref (if newly added) or equality
+                    var parent = returnResults.Single(rr => rr.Model == sourceResult.Parent || rr.Model.Equals(sourceResult.Parent)).Model;
 
-                    var snapshot = itemConfig.CreateSnapshot(leftResult.Model);
+                    //we quickly check that the model isn't already added
+                    if(!path.Get(parent).Any(m=>m == sourceResult.Model))
+                        path.Insert(parent, sourceResult.Model);
 
-                    rightResult = new Result<T>
+                    var snapshot = sourcePhlatType.CreateSnapshot(sourceResult.Model);
+
+                    targetResult = new Result<T>
                     {
-                        Model = leftResult.Model,
+                        Root = _root,
+                        Parent = parent,
+                        Model = sourceResult.Model,
                         State = ResultStates.Created,
                         Values = snapshot.Values(),
                         Changes = changes,
-                        Definition = definition
+                        Path = path
                     };
                 }
                 //update
-                else if(leftResult.State != ResultStates.Deleted)
+                else if(sourceResult.State != ResultStates.Deleted)
                 {
-                    var snapshot = itemConfig.CreateSnapshot(rightResult.Model);
+                    var snapshot = sourcePhlatType.CreateSnapshot(targetResult.Model);
                     var startValues = snapshot.Start();
 
-                    itemConfig.Update(leftResult.Model, rightResult.Model);
+                    sourcePhlatType.Update(sourceResult.Model, targetResult.Model);
 
                     changes = snapshot.Changes();
-                    rightResult.Values = startValues;
-                    rightResult.Changes = changes;
+                    targetResult.Values = startValues;
+                    targetResult.Changes = changes;
 
                     if (changes.Any())
-                        rightResult.State = ResultStates.Updated;
+                        targetResult.State = ResultStates.Updated;
                 }
 
-                returnResults.Add(rightResult);
+                returnResults.Add(targetResult);
             }
 
             //delete items works from the target to the source
-            foreach(var rightResult in rightResults)
+            foreach(var targetResult in targetResults)
             {
-                var definition = rightResult.Definition;
+                if (targetResult.IsRoot) continue;
 
-                var leftResult = leftResults.Where(lr => Object.Equals(rightResult.Model, lr.Model)).SingleOrDefault();
+                var path = targetResult.Path;
 
-                if (definition.Delete(leftResult?.Model, rightResult.Model))
+                var sourceResult = sourceResults.Where(lr => Object.Equals(targetResult.Model, lr.Model)).SingleOrDefault();
+
+                if (path.ShouldDelete(sourceResult?.Model, targetResult.Model))
                 {
-                    rightResult.State = ResultStates.Deleted;
-                    returnResults.Add(rightResult);
+                    targetResult.State = ResultStates.Deleted;
+                    returnResults.Add(targetResult);
                 }
             }
 

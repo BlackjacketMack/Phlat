@@ -6,15 +6,10 @@ using System.Reflection;
 
 namespace Phlatware
 {
-    public interface IPhlatType
-    {
-        Action<object, object> Update { get; }
-        ISnapshot CreateSnapshot(object model);
-    }
-
     public class PhlatType<T> : IPhlatType
     {
-        internal IList<Path<T>> Definitions { get; set; } = new List<Path<T>>();
+        IEnumerable<IPath> IPhlatType.Paths => Paths.Cast<IPath>();
+        internal IList<Path<T>> Paths { get; set; } = new List<Path<T>>();
 
         public Action<T, T> Update { get; set; }
 
@@ -22,16 +17,14 @@ namespace Phlatware
         {
             return new Snapshot<T>(model);
         }
-        public BindingFlags BindingFlags { get; set; } = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
         Action<object, object> IPhlatType.Update => (s, t) => Update((T)s, (T)t);
+
+
         ISnapshot IPhlatType.CreateSnapshot(object model) => CreateSnapshot((T)model);
 
         public PhlatType()
         {
-            //add a default root definition
-            var rootDefinition = makeDefinition((t) => new List<T> { t });
-            Definitions.Add(rootDefinition);
         }
 
         /// <summary>
@@ -39,10 +32,10 @@ namespace Phlatware
         /// </summary>
         public PhlatType<T> HasOne<TItem>(
                                             Func<T, TItem> get,
-                                            Func<TItem, TItem, bool> delete = null)
+                                            Func<TItem, TItem, bool> shouldDelete = null)
         {
             HasMany<TItem>(t => get(t) == null ? null : new List<TItem> { get(t) },
-                delete);
+                shouldDelete);
 
             return this;
         }
@@ -52,24 +45,24 @@ namespace Phlatware
         /// </summary>
         public PhlatType<T> HasMany<TItem>(
                                         Func<T, IList<TItem>> get,
-                                        Func<TItem, TItem, bool> delete = null)
+                                        Func<TItem, TItem, bool> shouldDelete = null)
         {
-            var definition = makeDefinition(get, delete);
+            var definition = makeDefinition(get, shouldDelete);
 
-            Definitions.Add(definition);
+            Paths.Add(definition);
 
             return this;
         }
 
         private Path<T> makeDefinition<TItem>(
                                         Func<T, IList<TItem>> get,
-                                        Func<TItem, TItem, bool> delete = null)
+                                        Func<TItem, TItem, bool> shouldDelete = null)
         {
             return new Path<T>
             {
                 Get = (t) => get(t)?.Cast<object>(),
                 Insert = (t, ti) => get(t).Add((TItem)ti),
-                Delete = (s,t)=> delete?.Invoke((TItem)s,(TItem)t) ?? false,
+                ShouldDelete = (s,t)=> shouldDelete?.Invoke((TItem)s,(TItem)t) ?? false,
                 Type = typeof(TItem)
             };
         }

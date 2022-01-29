@@ -8,20 +8,17 @@ namespace Phlatware
     /// Represents the configuration for either the root or an underlying property
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class Path<T> : IPath
+    public interface IPath
     {
-        Func<object, IEnumerable<object>> IPath.Get { get => o => Get((T)o); }
-        Action<object, object> IPath.Insert { get => (t, obj) => Insert((T)t, obj); }
-
         /// <summary>
         /// Get one or more models from T
         /// </summary>
-        public Func<T, IEnumerable<object>> Get { get; set; }
+        Func<object, IEnumerable<object>> Get { get; }
 
         /// <summary>
         /// Insert (or set) a member back to T
         /// </summary>
-        public Action<T, object> Insert { get; set; }
+        Action<object, object> Insert { get;  }
 
         /// <summary>
         /// Evaluates the source against the target and determines if the source should be marked for deletion.
@@ -31,11 +28,8 @@ namespace Phlatware
         /// If you want to delete based on a state property, you can do that too.
         /// (s,t)=>s.IsDeleted
         /// </summary>
-        public Func<object, object, bool> ShouldDelete { get; set; }
+        Func<object, object, bool> ShouldDelete { get;  }
 
-        public Type Type { get; set; }
-
-
-        
+        Type Type { get; }
     }
 }

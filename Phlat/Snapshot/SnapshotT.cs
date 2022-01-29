@@ -15,7 +15,6 @@ namespace Phlatware
         private static IDictionary<string, Func<T, object>> _propertyResolvers;
 
         private T _original;
-
         private IDictionary<string, object> _startValues;
 
         static Snapshot()
@@ -28,10 +27,12 @@ namespace Phlatware
             _original = original;
         }
 
+
         public IDictionary<string, object> Values()
         {
             return _propertyResolvers.ToDictionary(dict => dict.Key,
-                                                  dict => dict.Value(_original));
+                                                  dict => dict.Value(_original),
+                                                  StringComparer.InvariantCultureIgnoreCase);
         }
 
         public IDictionary<string, object> Start()
