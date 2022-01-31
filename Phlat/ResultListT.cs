@@ -13,25 +13,17 @@ namespace Phlatware
         public override string ToString()
         {
             var sb = new StringBuilder();
-            var tabs = new string('\t', 5);
-            sb.Append("Name         " + tabs);
-            sb.Append("State        " + tabs);
-            sb.Append("Values       " + tabs);
+            sb.AppendLine("| IsRoot | Model | State | Values | Changes |");
+            sb.AppendLine("| ------ | ----- | ----- | ------ | ------- |");
 
             foreach (var result in this)
             {
-                sb.AppendLine();
-                sb.Append(result.Model + tabs);
-                sb.Append(result.State + tabs);
-                sb.AppendLine(String.Empty);
-                if (result.Values?.Any() ?? false)
-                    sb.AppendLine(tabs + "Values:" + String.Join(",", result.Values) + tabs);
-
-                if (result.Changes?.Any() ?? false)
-                    sb.AppendLine(tabs + "Changes:" + String.Join(",", result.Changes) + tabs);
+                sb.AppendLine($"| {result.IsRoot} | {result.Model} | {result.State} | {dictToString(result.Values)} | {dictToString(result.Changes)} |");
             }
 
             return sb.ToString();
         }
+
+        private string dictToString(IDictionary<string, object> dict) => dict == null ? null : String.Join(",", dict);
     }
 }

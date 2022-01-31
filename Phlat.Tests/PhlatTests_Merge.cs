@@ -7,7 +7,7 @@ using System.Linq;
 namespace Phlatware.Tests
 {
     [TestClass]
-    public class PhlatTests
+    public class PhlatTests_Merge
     {
         private Phlat _target;
         private PhlatConfiguration _config;
@@ -102,63 +102,43 @@ namespace Phlatware.Tests
             _target = new Phlat(_config);
         }
 
-        [TestMethod]
-        public void TestFlatten()
-        {
-            var result = _target.Flatten(_foo1);
-
-            Console.WriteLine(result.ToString());
-
-            Assert.IsTrue(result.TrueForAll(r => r.Values == null));
-        }
 
         [TestMethod]
-        public void TestFlatten_WithValues()
+        public void TestMerge()
         {
-            var result = _target.Flatten(_foo1,includeValues:true);
-
-            Console.WriteLine(result.ToString());
-
-            Assert.IsTrue(result.TrueForAll(r => r.Values != null));
-        }
-
-        [TestMethod]
-        public void TestCreate()
-        {
-            var result = _target.Create(_foo1);
-
-            Console.WriteLine(result.ToString());
-
-            Assert.AreEqual(4, result.Count);
-            Assert.IsTrue(result.TrueForAll(m=>m.State == ResultStates.Created));
-            Assert.IsTrue(result.First().Values.ContainsKey(nameof(Foo.Id)));
-        }
-
-        [TestMethod]
-        public void TestModify()
-        {
-            var result = _target.Modify(_foo2, _foo1);
+            var result = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(result.ToString());
         }
 
         [TestMethod]
-        public void TestModify_SingleProp()
+        public void TestMerge_SinglePropAdded()
+        {
+            _foo1.Bar = null;
+
+            var result = _target.Merge(_foo2, _foo1);
+
+            Console.WriteLine(result);
+            Assert.AreEqual("Bar be thy name", ((Bar)result[1].Model).Name);
+        }
+
+        [TestMethod]
+        public void TestMerge_SingleProp()
         {
             _foo2.Bar.Name = "A new name for bar...Cheers?";
 
-            var result = _target.Modify(_foo2, _foo1);
+            var result = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(result);
             Assert.AreEqual("A new name for bar...Cheers?",((Bar)result[1].Model).Name);
         }
 
         [TestMethod]
-        public void TestModify_Deep()
+        public void TestMerge_Deep()
         {
             _foo2.Bazzes[1].Name = "Baz-a WAS thy name...from henceforth you shall be known as Bazzle.";
 
-            var results = _target.Modify(_foo2, _foo1);
+            var results = _target.Merge(_foo2, _foo1);
             Console.WriteLine(results.ToString());
 
             var result = results.Single(r => r.Model == _foo1.Bazzes[1]);
@@ -167,13 +147,13 @@ namespace Phlatware.Tests
         }
 
         [TestMethod]
-        public void TestModify_DeepInsert()
+        public void TestMerge_DeepInsert()
         {
             var newBaz = new Baz { Name = "The new Baz on the block." };
 
             _foo2.Bazzes.Add(newBaz);
 
-            var results = _target.Modify(_foo2, _foo1);
+            var results = _target.Merge(_foo2, _foo1);
             Console.WriteLine(results);
 
             var newResult = results.Where(w => Object.ReferenceEquals(w.Model, newBaz)).Single();
@@ -181,12 +161,12 @@ namespace Phlatware.Tests
         }
 
         [TestMethod]
-        public void TestModify_DeleteRemoved()
+        public void TestMerge_DeleteRemoved()
         {
             //remove one from our target.  foo2 will have an extra one that should be marked as deleted.
             _foo2.Bazzes.RemoveAt(0);
 
-            var result = _target.Modify(_foo2, _foo1);
+            var result = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(result.ToString());
 
@@ -212,7 +192,7 @@ namespace Phlatware.Tests
             //change the default from case-insensitive to case-sensitive
             var target = new Phlat(_config);
 
-            var results = target.Flatten(_foo1, includeValues: true);
+            var results = target.Flatten(_foo1);
 
             Assert.IsTrue(results.RootResult.Values.ContainsKey("id"));
         }

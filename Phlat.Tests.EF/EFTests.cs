@@ -76,7 +76,7 @@ namespace Phlatware.Tests.EF
             {
                 var targetBlog = getBlogFromDbContext(dbContext);               //this example should have change tracking enabled
 
-                var results = _phlat.Modify(sourceBlog, targetBlog);
+                var results = _phlat.Merge(sourceBlog, targetBlog);
 
                 //get deleted items and set them as deleted in ef
                 foreach(var result in results.Where(w => w.State == ResultStates.Deleted))

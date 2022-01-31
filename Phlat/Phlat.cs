@@ -9,19 +9,14 @@
             _configuration = configuration;
         }
 
-        public ResultList<T> Flatten<T>(T model, bool includeValues = false)
+        public ResultList<T> Flatten<T>(T model)
         {
-            return new Phlat<T>(_configuration).Flatten(model, includeValues);
+            return new Phlat<T>(_configuration).Flatten(model);
         }
 
-        public ResultList<T> Create<T>(T sourceModel)
+        public ResultList<T> Merge<T>(T sourceModel, T targetModel)
         {
-            return new Phlat<T>(_configuration).Create(sourceModel);
-        }
-
-        public ResultList<T> Modify<T>(T sourceModel, T targetModel)
-        {
-            return new Phlat<T>(_configuration).Modify(sourceModel, targetModel);
+            return new Phlat<T>(_configuration).Merge(sourceModel, targetModel);
         }
     }
 }

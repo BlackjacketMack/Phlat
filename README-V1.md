@@ -96,5 +96,5 @@ var results = phlat.Flatten(sourcePerson,targetPerson);
 | ------ | ----- | ----- | ------ | ------- |
 | True | Person:1 | Updated | [Name, Stanley],[Age, 29],[Id, 1] | [Name, FLAT Stanley],[Age, 30] |
 | False | Address:1 | Unchanged | [Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1] |  |
-| False | Address:2 | Unchanged | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |  |
+    | False | Address:2 | Unchanged | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |  |
 

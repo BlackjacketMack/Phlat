@@ -18,21 +18,39 @@ namespace Phlatware
         /// <summary>
         /// <see cref="Phlat.Flatten" />
         /// </summary>
-        public ResultList<T> Flatten(T model, bool includeValues = false)
+        public ResultList<T> Flatten(T model)
         {
-            if (model == null) throw new ArgumentNullException(nameof(model));
+            return flattenRoot(model, includeValues: true);
+        }
 
-            _root = model;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="includeValues">
+        /// Used internally for performance.
+        /// </param>
+        /// <returns></returns>
+        private ResultList<T> flattenRoot(T root, bool includeValues = false)
+        {
+            if (root == null) throw new ArgumentNullException(nameof(root));
 
-            var results = flatten(model, includeValues);
+            _root = root;
+
+            var results = flattenModel(root, includeValues);
 
             return results;
         }
 
         /// <summary>
-        /// <see cref="Phlat.Flatten" />
+        /// 
         /// </summary>
-        private ResultList<T> flatten(
+        /// <param name="model"></param>
+        /// <param name="includeValues"></param>
+        /// <param name="parent"></param>
+        /// <param name="parentPath"></param>
+        /// <returns></returns>
+        private ResultList<T> flattenModel(
                 object model, 
                 bool includeValues = false, 
                 object parent = null, 
@@ -71,39 +89,28 @@ namespace Phlatware
 
                 foreach (var dataModel in dataModels)
                 {
-                    var nestedResults = flatten(dataModel, 
+                    var nestedResults = flattenModel(dataModel, 
                                                 includeValues: includeValues, 
                                                 parent: model,
                                                 parentPath: path);
+
                     results.AddRange(nestedResults);
                 }
             }
 
             return results;
         }
-
-        public ResultList<T> Create(T leftModel)
-        {
-            if (leftModel == null) throw new ArgumentNullException(nameof(leftModel));
-
-            var results = Flatten(leftModel, includeValues:true);
-
-            foreach(var result in results)
-            {
-                result.State = ResultStates.Created;
-            }
-
-            return results;
-        }
         
-        public ResultList<T> Modify(T sourceModel, T targetModel)
+        public ResultList<T> Merge(T sourceModel, T targetModel)
         {
             if (sourceModel == null) throw new ArgumentNullException(nameof(sourceModel));
             if (targetModel == null) throw new ArgumentNullException(nameof(targetModel));
             if (Object.ReferenceEquals(sourceModel, targetModel)) throw new ArgumentException("Left and right models are equal.");
             
-            var sourceResults = Flatten(sourceModel);
-            var targetResults = Flatten(targetModel);
+            //get source and target results flattened.
+            //We don't need to include values because they're calculated individually per operation (which results in a modest performance boost)
+            var sourceResults = flattenRoot(sourceModel,includeValues:false);
+            var targetResults = flattenRoot(targetModel,includeValues: false);
             var returnResults = new ResultList<T>();
 
             foreach (var sourceResult in sourceResults)
@@ -124,7 +131,7 @@ namespace Phlatware
                     var parent = returnResults.Single(rr => rr.Model == sourceResult.Parent || rr.Model.Equals(sourceResult.Parent)).Model;
 
                     //we quickly check that the model isn't already added
-                    if(!path.Get(parent).Any(m=>m == sourceResult.Model))
+                    if(!path.Get(parent)?.Any(m=>m == sourceResult.Model) ?? true)
                         path.Insert(parent, sourceResult.Model);
 
                     var snapshot = sourcePhlatType.CreateSnapshot(sourceResult.Model);
@@ -140,19 +147,23 @@ namespace Phlatware
                         Path = path
                     };
                 }
-                //update
-                else if(sourceResult.State != ResultStates.Deleted)
+                
+                //if this is the root result it should be passed through the update routing.
+                //otherwise, if it is a sub-item check if we should delete it.
+                else if(sourceResult.IsRoot || !path.ShouldDelete(sourceResult?.Model, targetResult.Model))
                 {
                     var snapshot = sourcePhlatType.CreateSnapshot(targetResult.Model);
                     var startValues = snapshot.Start();
 
+                    if (sourcePhlatType.Update == null)
+                        throw new ApplicationException("No update method defined.");
+
                     sourcePhlatType.Update(sourceResult.Model, targetResult.Model);
 
-                    changes = snapshot.Changes();
                     targetResult.Values = startValues;
-                    targetResult.Changes = changes;
+                    targetResult.Changes = snapshot.Changes();
 
-                    if (changes.Any())
+                    if (targetResult.Changes.Any())
                         targetResult.State = ResultStates.Updated;
                 }
 
@@ -170,6 +181,11 @@ namespace Phlatware
 
                 if (path.ShouldDelete(sourceResult?.Model, targetResult.Model))
                 {
+                    var targetPhlatType = _configuration.GetPhlatType(targetResult.Type);
+                    var snapshot = targetPhlatType.CreateSnapshot(targetResult.Model);
+                    var targetValues = snapshot.Start();
+                    targetResult.Values = targetValues;
+
                     targetResult.State = ResultStates.Deleted;
                     returnResults.Add(targetResult);
                 }
@@ -184,5 +200,7 @@ namespace Phlatware
 
             return returnResults;
         }
+
+
     }
 }

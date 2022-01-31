@@ -13,7 +13,7 @@ namespace Phlatware
 
         }
 
-        public PhlatType<T> Configure<T>(Action<T, T> update)
+        public PhlatType<T> Configure<T>(Action<T, T> update = null)
         {
             var config = new PhlatType<T>
             {

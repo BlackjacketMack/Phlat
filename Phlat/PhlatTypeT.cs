@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Phlatware
 {
@@ -18,7 +17,7 @@ namespace Phlatware
             return new Snapshot<T>(model);
         }
 
-        Action<object, object> IPhlatType.Update => (s, t) => Update((T)s, (T)t);
+        Action<object, object> IPhlatType.Update => (s, t) => Update?.Invoke((T)s, (T)t);
 
 
         ISnapshot IPhlatType.CreateSnapshot(object model) => CreateSnapshot((T)model);
@@ -28,43 +27,53 @@ namespace Phlatware
         }
 
         /// <summary>
-        /// Singular
+        /// Returns a singular property.
         /// </summary>
         public PhlatType<T> HasOne<TItem>(
-                                            Func<T, TItem> get,
+                                            Expression<Func<T, TItem>> get,
                                             Func<TItem, TItem, bool> shouldDelete = null)
         {
-            HasMany<TItem>(t => get(t) == null ? null : new List<TItem> { get(t) },
-                shouldDelete);
+            var getCompiled = get.Compile();
+            var set = PhlatUtilities.GetSetter(get);
+            addPath<TItem>(
+                    t => {
+                        var v = getCompiled.Invoke(t);
+                        return v != null ? new List<TItem> { v } : null;
+                    },
+                    set,
+                    shouldDelete);
 
             return this;
         }
 
         /// <summary>
-        /// Enumerable
+        /// Returns and sets a list of properties.  
         /// </summary>
         public PhlatType<T> HasMany<TItem>(
                                         Func<T, IList<TItem>> get,
                                         Func<TItem, TItem, bool> shouldDelete = null)
         {
-            var definition = makeDefinition(get, shouldDelete);
-
-            Paths.Add(definition);
+            addPath(get,
+                    (t,ti)=>get(t).Add(ti),
+                    shouldDelete);
 
             return this;
         }
 
-        private Path<T> makeDefinition<TItem>(
+        private void addPath<TItem>(
                                         Func<T, IList<TItem>> get,
+                                        Action<T,TItem> insertAction,
                                         Func<TItem, TItem, bool> shouldDelete = null)
         {
-            return new Path<T>
+            var path = new Path<T>
             {
                 Get = (t) => get(t)?.Cast<object>(),
-                Insert = (t, ti) => get(t).Add((TItem)ti),
+                Insert = (t, ti) => insertAction(t,(TItem)ti),
                 ShouldDelete = (s,t)=> shouldDelete?.Invoke((TItem)s,(TItem)t) ?? false,
                 Type = typeof(TItem)
             };
+
+            Paths.Add(path);
         }
     }
 }

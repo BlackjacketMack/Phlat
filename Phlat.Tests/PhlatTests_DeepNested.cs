@@ -125,7 +125,7 @@ namespace Phlatware.Tests
 
             Console.WriteLine(result.ToString());
 
-            Assert.IsTrue(result.TrueForAll(r => r.Values == null));
+            Assert.IsTrue(result.TrueForAll(r => r.Values != null));
         }
 
         [TestMethod]
@@ -133,7 +133,7 @@ namespace Phlatware.Tests
         {
             _foo2.Bars[0].Bazs[0].Name = "A new baz name";
 
-            var results = _target.Modify(_foo2, _foo1);
+            var results = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(results.ToString());
 
@@ -145,7 +145,7 @@ namespace Phlatware.Tests
         {
             _foo2.Bars[0].Bazs.RemoveAt(0);
 
-            var results = _target.Modify(_foo2, _foo1);
+            var results = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(results.ToString());
 
@@ -159,7 +159,7 @@ namespace Phlatware.Tests
             var shinyNewBaz = new Baz { Name = "A shiny new baz" };
             _foo2.Bars[0].Bazs.Add(shinyNewBaz);
 
-            var results = _target.Modify(_foo2, _foo1);
+            var results = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(results.ToString());
 
@@ -176,7 +176,7 @@ namespace Phlatware.Tests
             
             _foo2.Bars.Add(shinyNewBar);
 
-            var results = _target.Modify(_foo2, _foo1);
+            var results = _target.Merge(_foo2, _foo1);
 
             Console.WriteLine(results.ToString());
 
