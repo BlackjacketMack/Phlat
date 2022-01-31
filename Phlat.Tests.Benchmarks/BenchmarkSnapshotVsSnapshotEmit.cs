@@ -53,11 +53,7 @@ namespace Phlat.Tests.Benchmarks
 
                 var target = snapshot(foo);
 
-                target.Start();
-
-                mutateFoo(foo);
-
-                target.Compare();
+                target.Values();
             }
         }
 

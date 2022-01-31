@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Phlatware
 {
@@ -13,8 +14,22 @@ namespace Phlatware
         public object Model { get; set; }
         public bool IsRoot => (object)this.Root == this.Model;
         public Type Type => this.Model.GetType();
+
+        /// <summary>
+        /// The current values of the model
+        /// </summary>
         public IDictionary<string, object> Values { get; set; }
-        public IDictionary<string, object> Changes { get; set; }
+
+        /// <summary>
+        /// Updated values from a merge operation
+        /// </summary>
+        public IDictionary<string,(object OldValue, object NewValue)> Updates { get; set; }
+
+        /// <summary>
+        /// Only the new values from the Updates dictionary
+        /// </summary>
+        public IDictionary<string, object> Changes => Updates?.ToDictionary(e => e.Key, e => e.Value.NewValue);
+
         public ResultStates State { get; set; }
         internal IPath Path { get; set; }
 

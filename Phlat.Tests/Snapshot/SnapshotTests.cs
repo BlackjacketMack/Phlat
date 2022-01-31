@@ -30,41 +30,7 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestCompare()
         {
-            var foo = new Foo
-            {
-                Id = 1,
-                Name = "Jake Peralta"
-            };
-
-            var snapshot = new Snapshot<Foo>(foo);
-            var startValues = snapshot.Start();
-
-            foo.Name = "Terry Jeffords";
-
-            var changes = snapshot.Compare();
-
-            Assert.AreEqual(1, changes[nameof(foo.Id)].NewValue);
-            Assert.AreEqual("Jake Peralta", changes[nameof(foo.Name)].OldValue);
-            Assert.AreEqual("Terry Jeffords", changes[nameof(foo.Name)].NewValue);
-        }
-
-        [TestMethod]
-        public void TestChanges()
-        {
-            var foo = new Foo
-            {
-                Id = 1,
-                Name = "Jake Peralta"
-            };
-
-            var snapshot = new Snapshot<Foo>(foo);
-            snapshot.Start();
-            foo.Name = "Terry Jeffords";
-
-            var changes = snapshot.Changes();
-
-            Assert.IsFalse(changes.ContainsKey(nameof(Foo.Id)));
-            Assert.AreEqual("Terry Jeffords", changes[nameof(foo.Name)]);
+            
         }
 
         [TestMethod]

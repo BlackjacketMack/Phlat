@@ -66,16 +66,7 @@ namespace Phlat.Tests.Benchmarks
 
                 var target = snapshot(foo);
 
-                target.Start();
-
-                mutateFoo(foo);
-
-                var changes = target.Changes();
-
-                if (changes.Count != 1 || 
-                    !changes.ContainsKey(nameof(Foo.Name)) || 
-                    (string)changes[nameof(Foo.Name)] != "Terry")
-                    throw new ApplicationException($"Changes are wrong.");
+                target.Values();
             }
         }
 

@@ -22,11 +22,6 @@ namespace Phlat.Tests.Benchmarks
             return dict;
         }
 
-        public IDictionary<string, (object OldValue, object NewValue)> Compare()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public IDictionary<string, object> Start()
         {
             _snapshot = Snapshotter.Start(_original);

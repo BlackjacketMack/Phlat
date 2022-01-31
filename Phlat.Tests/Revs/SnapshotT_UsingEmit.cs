@@ -27,24 +27,6 @@ namespace Phlatware
             return GetValues();
         }
 
-        public IDictionary<string, object> Changes()
-        {
-            var comparedValues = Compare();
-
-            var changes = comparedValues
-                    .Where(w => !areEqual(w.Value.OldValue, w.Value.NewValue))
-                    .ToDictionary(d => d.Key, d => d.Value.NewValue);
-
-            return changes;
-        }
-
-        public IDictionary<string, (object OldValue, object NewValue)> Compare()
-        {
-            var currentValues = Values();
-
-            return _startValues.ToDictionary(sv => sv.Key, sv => (sv.Value, currentValues[sv.Key]));
-        }
-
         public SnapshotT_UsingEmit(T original)
         {
             _original = original;

@@ -87,14 +87,16 @@ Age = 30
 
 var targetPerson = //person from sample data...would be in db
 
-var results = phlat.Flatten(sourcePerson,targetPerson);
+var results = phlat.Merge(sourcePerson,targetPerson);
 ```
 
 *The above call yields the following results::*
 
-| IsRoot | Model | State | Values | Changes |
+ | IsRoot | Model | State | Values | Updates |
 | ------ | ----- | ----- | ------ | ------- |
-| True | Person:1 | Updated | [Name, Stanley],[Age, 29],[Id, 1] | [Name, FLAT Stanley],[Age, 30] |
+| True | Person:1 | Updated | [Name, FLAT Stanley],[Age, 30],[Id, 1] | [Name, { OldValue = Stanley, NewValue = FLAT Stanley }],[Age, { OldValue = 29, NewValue = 30 }] |
 | False | Address:1 | Unchanged | [Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1] |  |
 | False | Address:2 | Unchanged | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |  |
+
+
 

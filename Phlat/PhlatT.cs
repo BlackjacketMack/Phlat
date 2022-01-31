@@ -76,7 +76,6 @@ namespace Phlatware
                 Model = model,
                 Path = parentPath,                    //how it got here
                 Values = values,
-                Changes = null
             };
 
             results.Add(result);
@@ -143,7 +142,6 @@ namespace Phlatware
                         Model = sourceResult.Model,
                         State = ResultStates.Created,
                         Values = snapshot.Values(),
-                        Changes = changes,
                         Path = path
                     };
                 }
@@ -153,15 +151,17 @@ namespace Phlatware
                 else if(sourceResult.IsRoot || !path.ShouldDelete(sourceResult?.Model, targetResult.Model))
                 {
                     var snapshot = sourcePhlatType.CreateSnapshot(targetResult.Model);
-                    var startValues = snapshot.Start();
+                    var startValues = snapshot.Values();
 
                     if (sourcePhlatType.Update == null)
                         throw new ApplicationException("No update method defined.");
 
                     sourcePhlatType.Update(sourceResult.Model, targetResult.Model);
 
-                    targetResult.Values = startValues;
-                    targetResult.Changes = snapshot.Changes();
+                    var stopValues = snapshot.Values();
+
+                    targetResult.Values = stopValues;
+                    targetResult.Updates = getUpdates(startValues, stopValues);
 
                     if (targetResult.Changes.Any())
                         targetResult.State = ResultStates.Updated;
@@ -183,7 +183,7 @@ namespace Phlatware
                 {
                     var targetPhlatType = _configuration.GetPhlatType(targetResult.Type);
                     var snapshot = targetPhlatType.CreateSnapshot(targetResult.Model);
-                    var targetValues = snapshot.Start();
+                    var targetValues = snapshot.Values();
                     targetResult.Values = targetValues;
 
                     targetResult.State = ResultStates.Deleted;
@@ -201,6 +201,18 @@ namespace Phlatware
             return returnResults;
         }
 
+        private static IDictionary<string,(object OldValue, object NewValue)> getUpdates(IDictionary<string,object> startValues, IDictionary<string, object> stopValues)
+        {
+            return startValues
+                .Where(sv => !areEqual(sv.Value, stopValues[sv.Key]))
+                .ToDictionary(e => e.Key, e => (e.Value, stopValues[e.Key]));
+        }
 
+        private static bool areEqual(object first, object second)
+        {
+            if (first == null && second == null) return true;
+            if (first == null) return false;
+            return first.Equals(second);
+        }
     }
 }

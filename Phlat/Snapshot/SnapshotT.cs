@@ -15,7 +15,6 @@ namespace Phlatware
         private static IDictionary<string, Func<T, object>> _propertyResolvers;
 
         private T _original;
-        private IDictionary<string, object> _startValues;
 
         static Snapshot()
         {
@@ -27,48 +26,11 @@ namespace Phlatware
             _original = original;
         }
 
-
         public IDictionary<string, object> Values()
         {
             return _propertyResolvers.ToDictionary(dict => dict.Key,
                                                   dict => dict.Value(_original),
                                                   StringComparer.InvariantCultureIgnoreCase);
-        }
-
-        public IDictionary<string, object> Start()
-        {
-            _startValues = Values();
-
-            return _startValues;
-        }
-
-        private static bool areEqual(object first, object second)
-        {
-            if (first == null && second == null) return true;
-            if (first == null) return false;
-            return first.Equals(second);
-        }
-
-        /// <summary>
-        /// Returns a list of changes
-        /// </summary>
-        public IDictionary<string,object> Changes()
-        {
-            var comparedValues = Compare();
-
-            return comparedValues
-                    .Where(w => !areEqual(w.Value.OldValue, w.Value.NewValue))
-                    .ToDictionary(d => d.Key, d => d.Value.NewValue);
-        }
-
-        /// <summary>
-        /// Returns all values side by side
-        /// </summary>
-        public IDictionary<string, (object OldValue, object NewValue)> Compare()
-        {
-            var currentValues = Values();
-
-            return _startValues.ToDictionary(sv => sv.Key, sv => (sv.Value, currentValues[sv.Key]));
         }
 
         private static List<PropertyInfo> getRelevantProperties()

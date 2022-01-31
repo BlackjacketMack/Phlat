@@ -37,11 +37,11 @@ namespace Phlatware.Tests
             };
 
             var snapshot = new SnapshotT_UsingEmit<Foo>(foo);
-            snapshot.Start();
+            snapshot.Values();
 
             foo.Name = "Terry";
 
-            var changes = snapshot.Changes();
+            var changes = snapshot.Values();
 
             Assert.AreEqual("Terry", changes[nameof(foo.Name)]);
         }

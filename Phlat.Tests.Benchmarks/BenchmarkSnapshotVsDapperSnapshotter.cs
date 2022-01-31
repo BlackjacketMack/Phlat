@@ -41,11 +41,11 @@ namespace Phlat.Tests.Benchmarks
             {
                 var target = new Snapshot<Foo>(_foo);
 
-                target.Start();
+                target.Values();
 
                 mutateFoo();
 
-                var changes = target.Changes();
+                var changes = target.Values();
             }
         }
 
