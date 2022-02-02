@@ -1,10 +1,11 @@
 # Phlat
+---
 Phlat is a simple helper built in C# that turns an object gra(PH) into a f(LAT) structure.
-It has two core methods: **Flatten** and **Merge**.  It can be used in repositories to help wrangle aggregate roots and account for changes in the aggregate.
+It has two core methods: **Flatten** and **Merge**.  It can be used in repositories to help wrangle aggregate roots and account for changes throughtout the aggregate.
 
+[![.NET](https://github.com/BlackjacketMack/Phlat/actions/workflows/dotnet.yml/badge.svg)](https://github.com/BlackjacketMack/Phlat/actions/workflows/dotnet.yml)
 
-## Sample Class Structure and Data
-
+**Sample Class Structure and Data**
 
 
 The examples on this page use a simple Person/Address structure with some prepopulated values.  Specifically, a person named 'Stanley' has multiple addresses. 
@@ -12,6 +13,7 @@ The examples on this page use a simple Person/Address structure with some prepop
 
 
 ## Flatten
+---
 
 **Create a configuration**
 
@@ -46,6 +48,7 @@ var results = phlat.Flatten(person);
 The results above show how our aggregate root has been flattened into several results.
 
 ## Merge
+---
 Merge flattens two objects and combines them.  The 'source' object gets merged onto the *target* object.  In practice, the *source* object is typically a graph received from an api, or possibly from form fields.  The *target* on the other hand would be the stored object in the database.  When merging you want to take the object from the interface and mutate the database object.  
 
 Finally, it should be noted that we are actually mutating the target model.  If an non-root gets added to a list, the target model will have that item added to the list.  
