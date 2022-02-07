@@ -97,11 +97,11 @@ var results = phlat.Merge(sourcePerson,targetPerson);
 
 *The above call yields the following results::*
 
-| IsRoot | Model | State | Values | Updates |
+| Path | Model | State | Values | Updates |
 | ------ | ----- | ----- | ------ | ------- |
-| True | Person:1 | Updated | `[Name, FLAT Stanley],[Age, 30],[Id, 1]` | `[Name, { OldValue = Stanley, NewValue = FLAT Stanley }],[Age, { OldValue = 29, NewValue = 30 }]` |
-| False | Address:1 | Unchanged | `[Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1]` |  |
-| False | Address:2 | Unchanged | `[Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2]` |  |
+| [ROOT] | Person:1 | Updated | `[Name, FLAT Stanley],[Age, 30],[Id, 1]` | `[Name, { OldValue = Stanley, NewValue = FLAT Stanley }],[Age, { OldValue = 29, NewValue = 30 }]` |
+| [ROOT].Addresses | Address:1 | Unchanged | `[Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1]` |  |
+| [ROOT].Addresses | Address:2 | Unchanged | `[Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2]` |  |
 
 
 ## Additional Topics

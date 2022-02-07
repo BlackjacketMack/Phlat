@@ -19,12 +19,18 @@ namespace Phlatware
             foreach (var result in this)
             {
                 var updates = result.Updates?.ToDictionary(e => e.Key, e => (object)new { e.Value.OldValue, e.Value.NewValue });
-                sb.AppendLine($"| {result.PathName} | {result.Model} | {result.State} | `{dictToString(result.Values)}` | `{dictToString(updates)}` |");
+                sb.AppendLine($"| {result.PathName} | {result.Model} | {result.State} | {dictToString(result.Values)} | {dictToString(updates)} |");
             }
 
             return sb.ToString();
         }
 
-        private string dictToString(IDictionary<string, object> dict) => dict == null ? null : String.Join(",", dict);
+        private string dictToString(IDictionary<string, object> dict)
+        {
+            if (dict == null || dict.Count == 0)
+                return null;
+            else
+                return $"`{String.Join(",", dict)}`";
+        }
     }
 }
