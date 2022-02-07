@@ -19,7 +19,7 @@ namespace Phlatware
             foreach (var result in this)
             {
                 var updates = result.Updates?.ToDictionary(e => e.Key, e => (object)new { e.Value.OldValue, e.Value.NewValue });
-                sb.AppendLine($"| {result.IsRoot} | {result.Model} | {result.State} | {dictToString(result.Values)} | {dictToString(updates)} |");
+                sb.AppendLine($"| {result.IsRoot} | {result.Model} | {result.State} | `{dictToString(result.Values)}` | `{dictToString(updates)}` |");
             }
 
             return sb.ToString();

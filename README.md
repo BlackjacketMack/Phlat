@@ -1,7 +1,13 @@
 # Phlat
----
-Phlat is a simple helper built in C# that turns an object gra(PH) into a f(LAT) structure.
-It has two core methods: **Flatten** and **Merge**.  It can be used in repositories to help wrangle aggregate roots and account for changes throughtout the aggregate.
+
+Phlat is a simple helper built in C# that turns an object gra(PH) into a f(LAT) structure.  
+It is meant to help manage [aggregates](https://martinfowler.com/bliki/DDD_Aggregate.html).
+There are two core methods: **Flatten** and **Merge**.  
+
+While Phlat is a helpful library for repositories, it is not partial to any database implementation.  
+It can be used with EF as it transforms targets, or assist with Dapper CRUD statements for complex object types.
+Phlat is intended to be simple and transparent in how it navigates an aggregate and reveals the underlying properties
+and mutations.
 
 [![.NET](https://github.com/BlackjacketMack/Phlat/actions/workflows/dotnet.yml/badge.svg)](https://github.com/BlackjacketMack/Phlat/actions/workflows/dotnet.yml)
 
@@ -13,7 +19,9 @@ The examples on this page use a simple Person/Address structure with some prepop
 
 
 ## Flatten
----
+
+Flatten exists as a descriptive function that can be used for diagnostic purposes.  
+(Note that it is the basis for our merge method outlined below.)
 
 **Create a configuration**
 
@@ -38,17 +46,17 @@ var results = phlat.Flatten(person);
 
 *The above call yields the following results:*
 
-| IsRoot | Model | State | Values | 
-| ------ | ----- | ----- | ------ |
-| True | Person 1 | Unchanged | [Name, Stanley],[Age, 29],[Id, 1] |
-| False | Address 1 | Unchanged | [Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1] |
-| False | Address 2 | Unchanged | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |
+| IsRoot | Model | Values | 
+| ------ | ----- | ------ |
+| True | Person 1 | [Name, Stanley],[Age, 29],[Id, 1] |
+| False | Address 1 | [Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1] |
+| False | Address 2 | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |
 
 
 The results above show how our aggregate root has been flattened into several results.
 
 ## Merge
----
+
 Merge flattens two objects and combines them.  The 'source' object gets merged onto the *target* object.  In practice, the *source* object is typically a graph received from an api, or possibly from form fields.  The *target* on the other hand would be the stored object in the database.  When merging you want to take the object from the interface and mutate the database object.  
 
 Finally, it should be noted that we are actually mutating the target model.  If an non-root gets added to a list, the target model will have that item added to the list.  
@@ -67,13 +75,7 @@ config.Configure<Person>((s,t)=>{
 		//indicate that there are many addresses
 		.HasMany(m => m.Addresses);
 
-//configure *Address* and configure the same fields
-config.Configure<Address>((s,t)=>{
-			t.Street = s.Street
-            t.City = s.City
-            t.State = s.State
-            t.IsShipping = s.IsShipping
-		}));
+config.Configure<Address>();
 
 var phlat = new Phlat(config);
 ```
@@ -95,11 +97,17 @@ var results = phlat.Merge(sourcePerson,targetPerson);
 
 *The above call yields the following results::*
 
- | IsRoot | Model | State | Values | Updates |
+| IsRoot | Model | State | Values | Updates |
 | ------ | ----- | ----- | ------ | ------- |
-| True | Person:1 | Updated | [Name, FLAT Stanley],[Age, 30],[Id, 1] | [Name, { OldValue = Stanley, NewValue = FLAT Stanley }],[Age, { OldValue = 29, NewValue = 30 }] |
-| False | Address:1 | Unchanged | [Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1] |  |
-| False | Address:2 | Unchanged | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |  |
+| True | Person:1 | Updated | `[Name, FLAT Stanley],[Age, 30],[Id, 1]` | `[Name, { OldValue = Stanley, NewValue = FLAT Stanley }],[Age, { OldValue = 29, NewValue = 30 }]` |
+| False | Address:1 | Unchanged | `[Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1]` |  |
+| False | Address:2 | Unchanged | `[Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2]` |  |
 
 
-
+## Additional Topics
+* How items are deleted when merging
+* How items are compared for equality when merging
+* How deep nested properties can be setup
+* How Phlat can be used with EF
+* How Phlat can be used with Dapper
+* How simple properties (non IList properties) can be setup
