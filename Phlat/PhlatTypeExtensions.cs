@@ -13,9 +13,24 @@ namespace Phlatware
         /// </summary>
         public static PhlatType<T> HasMany<T,TItem>(this PhlatType<T> phlatType,
                                             Func<T, IList<TItem>> get,
-                                            bool deleteIfMissing)
+                                            bool deleteIfSourceMissing)
         {
-            return phlatType.HasMany(get, deleteIf: (s, t) => deleteIfMissing ? s == null : false);
+            return phlatType.HasMany(get, deleteIf: (s, t) => deleteIfSourceMissing ? s == null : false);
+        }
+
+        /// <summary>
+        /// Simple extension that handles the common scenario of removing items 
+        /// based on a flag property (e.g. IsDeleted).  This extension is slightly cleaner
+        /// than using the root Action which allows evaluation of both the source and target items.
+        /// This extension looks at only the source item.
+        /// </summary>
+        public static PhlatType<T> HasMany<T, TItem>(this PhlatType<T> phlatType,
+                                            Func<T, IList<TItem>> get,
+                                            Func<TItem,bool> deleteIfSourceHas)
+        {
+            if (deleteIfSourceHas == null) throw new ArgumentNullException(nameof(deleteIfSourceHas));
+
+            return phlatType.HasMany(get, deleteIf: (s, t) => deleteIfSourceHas(s));
         }
     }
 }

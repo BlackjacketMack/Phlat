@@ -12,7 +12,7 @@ namespace Phlatware.Tests.EF
             })
             .HasMany(
                 b => b.Posts,                                       //define the path
-                deleteIfMissing:true                            
+                deleteIfSourceMissing:true                            
             );                                         
 
             config.Configure<Post>((s, t) =>
