@@ -205,6 +205,27 @@ namespace Phlatware.Tests
             Assert.IsNull(_targetFoo.Bar);
         }
 
+        [TestMethod]
+        public void TestMerge_DeletePropertyOnlyCreatesSingleResult()
+        {
+            //change the default from case-insensitive to case-sensitive
+            var target = new Phlat(_config);
+
+            //remove an item from _foo2 and it should be removed from _foo1.
+            _sourceFoo.Bar.Name = "DELETE ME";
+
+            var results = _target.Merge(_sourceFoo, _targetFoo);
+
+            Console.Write(results);
+
+            Assert.IsNull(_targetFoo.Bar);
+
+            foreach(var model in results.Select(s => s.Model))
+            {
+                Assert.AreEqual(1, results.Count(c => c.Model.Equals(model)));
+            }
+        }
+
         private class CustomComparerByName : IEqualityComparer<Foo>
         {
             public bool Equals(Foo x, Foo y)

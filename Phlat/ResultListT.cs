@@ -13,13 +13,13 @@ namespace Phlatware
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendLine("| IsRoot | Model | State | Values | Updates |");
+            sb.AppendLine("| Path | Model | State | Values | Updates |");
             sb.AppendLine("| ------ | ----- | ----- | ------ | ------- |");
 
             foreach (var result in this)
             {
                 var updates = result.Updates?.ToDictionary(e => e.Key, e => (object)new { e.Value.OldValue, e.Value.NewValue });
-                sb.AppendLine($"| {result.IsRoot} | {result.Model} | {result.State} | `{dictToString(result.Values)}` | `{dictToString(updates)}` |");
+                sb.AppendLine($"| {result.PathName} | {result.Model} | {result.State} | `{dictToString(result.Values)}` | `{dictToString(updates)}` |");
             }
 
             return sb.ToString();

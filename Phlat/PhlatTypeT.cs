@@ -33,9 +33,11 @@ namespace Phlatware
                                             Expression<Func<T, TItem>> get,
                                             Func<TItem, TItem, bool> shouldDelete = null)
         {
+            var pathName = PhlatUtilities.GetMemberName(get);
             var getCompiled = get.Compile();
             var setCompiled = PhlatUtilities.GetSetter(get);
             addPath<TItem>(
+                    pathName,
                     t => {
                         var v = getCompiled.Invoke(t);
                         return v != null ? new List<TItem> { v } : null;
@@ -51,18 +53,22 @@ namespace Phlatware
         /// Returns and sets a list of properties.  
         /// </summary>
         public PhlatType<T> HasMany<TItem>(
-                                        Func<T, IList<TItem>> get,
+                                        Expression<Func<T, IList<TItem>>> get,
                                         Func<TItem, TItem, bool> deleteIf = null)
         {
-            addPath(get,
-                    (t,ti)=>get(t).Add(ti),
+            var pathName = PhlatUtilities.GetMemberName(get);
+            var getCompiled = get.Compile();
+            addPath(pathName,
+                    getCompiled,
+                    (t,ti)=> getCompiled(t).Add(ti),
                     deleteIf,
-                    (t,ti)=>get(t).Remove(ti));
+                    (t,ti)=> getCompiled(t).Remove(ti));
 
             return this;
         }
 
         private void addPath<TItem>(
+                                        string name,
                                         Func<T, IList<TItem>> get,
                                         Action<T,TItem> insertAction,
                                         Func<TItem, TItem, bool> shouldDelete = null,
@@ -70,6 +76,7 @@ namespace Phlatware
         {
             var path = new Path<T>
             {
+                Name = name,
                 Get = (t) => get(t)?.Cast<object>(),
                 Insert = (t, ti) => insertAction(t,(TItem)ti),
                 DeleteIf = (s,t)=> shouldDelete?.Invoke((TItem)s,(TItem)t) ?? false,

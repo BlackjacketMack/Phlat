@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Phlatware
 {
@@ -12,7 +13,7 @@ namespace Phlatware
         /// If Source has A,B,D and Target has A,B,C,D...C should be removed.
         /// </summary>
         public static PhlatType<T> HasMany<T,TItem>(this PhlatType<T> phlatType,
-                                            Func<T, IList<TItem>> get,
+                                            Expression<Func<T, IList<TItem>>> get,
                                             bool deleteIfSourceMissing)
         {
             return phlatType.HasMany(get, deleteIf: (s, t) => deleteIfSourceMissing ? s == null : false);
@@ -25,7 +26,7 @@ namespace Phlatware
         /// This extension looks at only the source item.
         /// </summary>
         public static PhlatType<T> HasMany<T, TItem>(this PhlatType<T> phlatType,
-                                            Func<T, IList<TItem>> get,
+                                            Expression<Func<T, IList<TItem>>> get,
                                             Func<TItem,bool> deleteIfSourceHas)
         {
             if (deleteIfSourceHas == null) throw new ArgumentNullException(nameof(deleteIfSourceHas));

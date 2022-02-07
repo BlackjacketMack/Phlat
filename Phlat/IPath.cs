@@ -11,6 +11,11 @@ namespace Phlatware
     public interface IPath
     {
         /// <summary>
+        /// The name of the path (e.g. [Root].Addresses)
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
         /// Get one or more models from T
         /// </summary>
         Func<object, IEnumerable<object>> Get { get; }

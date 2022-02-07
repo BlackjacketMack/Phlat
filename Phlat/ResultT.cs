@@ -32,6 +32,7 @@ namespace Phlatware
 
         public ResultStates State { get; set; }
         internal IPath Path { get; set; }
+        internal string PathName { get; set; }
 
         public override string ToString() => $"{Model} {State} (Parent: {Parent})";
     }

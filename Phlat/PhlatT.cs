@@ -54,7 +54,8 @@ namespace Phlatware
                 object model, 
                 bool includeValues = false, 
                 object parent = null, 
-                IPath parentPath = null)
+                IPath parentPath = null,
+                string parentPathName = null)
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
 
@@ -69,12 +70,15 @@ namespace Phlatware
 
             var values = includeValues ? snapshot.Values() : null;
 
+            var pathName = parentPathName ?? "[ROOT]";
+
             var result = new Result<T>
             {
                 Root = _root,
                 Parent = parent,
                 Model = model,
                 Path = parentPath,                    //how it got here
+                PathName = pathName,
                 Values = values,
             };
 
@@ -91,7 +95,8 @@ namespace Phlatware
                     var nestedResults = flattenModel(dataModel, 
                                                 includeValues: includeValues, 
                                                 parent: model,
-                                                parentPath: path);
+                                                parentPath: path,
+                                                parentPathName: $"{pathName}.{path.Name}");
 
                     results.AddRange(nestedResults);
                 }
@@ -119,7 +124,9 @@ namespace Phlatware
                 var sourcePhlatType = _configuration.GetPhlatType(sourceResult.Type);
 
                 //this will be our return result
-                var targetResult = targetResults.Where(rr => Object.Equals(sourceResult.Model, rr.Model)).SingleOrDefault();
+                var targetResult = targetResults.Where(tr=>
+                                                    tr.PathName == sourceResult.PathName &&                             //results must share the same pathname
+                                                    Object.Equals(sourceResult.Model, tr.Model)).SingleOrDefault();     //models must be equal using default equality comparer
 
                 IDictionary<string, object> changes = new Dictionary<string, object>();
 
@@ -144,8 +151,10 @@ namespace Phlatware
                         Values = snapshot.Values(),
                         Path = path
                     };
+
+                    returnResults.Add(targetResult);
                 }
-                
+
                 //if this is the root result it should be passed through the update routing.
                 //otherwise, if it is a sub-item check if we should delete it.
                 else if(sourceResult.IsRoot || !path.DeleteIf(sourceResult?.Model, targetResult.Model))
@@ -165,13 +174,17 @@ namespace Phlatware
 
                     if (targetResult.Changes.Any())
                         targetResult.State = ResultStates.Updated;
-                }
 
-                returnResults.Add(targetResult);
+                    returnResults.Add(targetResult);
+                }
+                else
+                {
+                    continue;
+                }
             }
 
             //delete items works from the target to the source
-            foreach(var targetResult in targetResults)
+            foreach (var targetResult in targetResults)
             {
                 if (targetResult.IsRoot) continue;
 

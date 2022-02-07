@@ -10,6 +10,8 @@ namespace Phlatware
     /// <typeparam name="T"></typeparam>
     internal class Path<T> : IPath
     {
+        public string Name { get; set; }
+
         Func<object, IEnumerable<object>> IPath.Get => o => Get((T)o);
         Action<object, object> IPath.Insert => (t, obj) => Insert((T)t, obj);
         Action<object, object> IPath.Delete => (t,ti) => Delete((T)t,ti);
