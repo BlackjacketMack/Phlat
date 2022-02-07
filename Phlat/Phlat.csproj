@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.0.25-alpha</Version>
+    <Version>0.0.26-alpha</Version>
     <Authors>Rob Mackenzie</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>A simple library that can flatten simple graphs (think Order/OrderItem) and track changes on the underlying objects.</Description>
+    <Description>A little library that can flatten simple graphs (think Order/OrderItem) and track changes on the underlying objects.</Description>
     <PackageTags>Dapper, Flatten, Object Graph</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Company />
