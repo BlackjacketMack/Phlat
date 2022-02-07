@@ -78,11 +78,11 @@ namespace Phlatware.Tests.EF
 
                 var results = _phlat.Merge(sourceBlog, targetBlog);
 
-                //get deleted items and set them as deleted in ef
-                foreach(var result in results.Where(w => w.State == ResultStates.Deleted))
-                {
-                    dbContext.Entry(result.Model).State = EntityState.Deleted;
-                }
+                ////get deleted items and set them as deleted in ef
+                //foreach(var result in results.Where(w => w.State == ResultStates.Deleted))
+                //{
+                //    dbContext.Entry(result.Model).State = EntityState.Deleted;
+                //}
 
                 dbContext.SaveChanges();
 
