@@ -1,7 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Phlatware.Tests
@@ -51,7 +50,7 @@ namespace Phlatware.Tests
         }
 
         private Foo _foo1;
-        private Foo _foo2;
+        private Foo _sourceFoo;
 
         [TestInitialize]
         public void Initting()
@@ -76,7 +75,7 @@ namespace Phlatware.Tests
                 }
             };
 
-            _foo2 = new Foo
+            _sourceFoo = new Foo
             {
                 Id = 1,
                 Name = "Foo be thy name",
@@ -131,9 +130,9 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestMerge_ModifyABaz()
         {
-            _foo2.Bars[0].Bazs[0].Name = "A new baz name";
+            _sourceFoo.Bars[0].Bazs[0].Name = "A new baz name";
 
-            var results = _target.Merge(_foo2, _foo1);
+            var results = _target.Merge(_sourceFoo, _foo1);
 
             Console.WriteLine(results.ToString());
 
@@ -143,13 +142,15 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestMerge_RemoveABaz()
         {
-            _foo2.Bars[0].Bazs.RemoveAt(0);
+            _sourceFoo.Bars[0].Bazs.RemoveAt(0);
 
-            var results = _target.Merge(_foo2, _foo1);
+            var bazRemoved = _foo1.Bars[0].Bazs[0];
+
+            var results = _target.Merge(_sourceFoo, _foo1);
 
             Console.WriteLine(results.ToString());
 
-            var result = results.Where(w => w.Model == _foo1.Bars[0].Bazs[0]).Single();
+            var result = results.Where(w => w.Model == bazRemoved).Single();
             Assert.AreEqual(ResultStates.Deleted,result.State);
         }
 
@@ -157,9 +158,9 @@ namespace Phlatware.Tests
         public void TestMerge_AddABaz()
         {
             var shinyNewBaz = new Baz { Name = "A shiny new baz" };
-            _foo2.Bars[0].Bazs.Add(shinyNewBaz);
+            _sourceFoo.Bars[0].Bazs.Add(shinyNewBaz);
 
-            var results = _target.Merge(_foo2, _foo1);
+            var results = _target.Merge(_sourceFoo, _foo1);
 
             Console.WriteLine(results.ToString());
 
@@ -174,9 +175,9 @@ namespace Phlatware.Tests
             var shinyNewBaz = new Baz { Name = "A shiny new baz" };
             shinyNewBar.Bazs = new List<Baz> { shinyNewBaz };
             
-            _foo2.Bars.Add(shinyNewBar);
+            _sourceFoo.Bars.Add(shinyNewBar);
 
-            var results = _target.Merge(_foo2, _foo1);
+            var results = _target.Merge(_sourceFoo, _foo1);
 
             Console.WriteLine(results.ToString());
 

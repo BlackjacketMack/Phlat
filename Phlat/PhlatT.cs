@@ -181,6 +181,7 @@ namespace Phlatware
 
                 if (path.ShouldDelete(sourceResult?.Model, targetResult.Model))
                 {
+                    //append result
                     var targetPhlatType = _configuration.GetPhlatType(targetResult.Type);
                     var snapshot = targetPhlatType.CreateSnapshot(targetResult.Model);
                     var targetValues = snapshot.Values();
@@ -188,6 +189,10 @@ namespace Phlatware
 
                     targetResult.State = ResultStates.Deleted;
                     returnResults.Add(targetResult);
+
+                    //mutate target
+                    if (path.Delete != null)
+                        path.Delete(targetResult.Parent, targetResult.Model);
                 }
             }
 

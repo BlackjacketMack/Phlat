@@ -30,6 +30,14 @@ namespace Phlatware
         /// </summary>
         Func<object, object, bool> ShouldDelete { get;  }
 
+
+        /// <summary>
+        /// The action to take when an item is delete from the parent.
+        /// In the case of collections, the item is typically removed.
+        /// In the case of single properties, the property is set to 'default'.
+        /// </summary>
+        Action<object, object> Delete { get; }
+
         Type Type { get; }
     }
 }

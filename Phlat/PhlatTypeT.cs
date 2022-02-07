@@ -34,14 +34,15 @@ namespace Phlatware
                                             Func<TItem, TItem, bool> shouldDelete = null)
         {
             var getCompiled = get.Compile();
-            var set = PhlatUtilities.GetSetter(get);
+            var setCompiled = PhlatUtilities.GetSetter(get);
             addPath<TItem>(
                     t => {
                         var v = getCompiled.Invoke(t);
                         return v != null ? new List<TItem> { v } : null;
                     },
-                    set,
-                    shouldDelete);
+                    setCompiled,
+                    shouldDelete,
+                    delete: (t,ti)=>setCompiled(t,default));
 
             return this;
         }
@@ -55,7 +56,8 @@ namespace Phlatware
         {
             addPath(get,
                     (t,ti)=>get(t).Add(ti),
-                    shouldDelete);
+                    shouldDelete,
+                    (t,ti)=>get(t).Remove(ti));
 
             return this;
         }
@@ -63,13 +65,15 @@ namespace Phlatware
         private void addPath<TItem>(
                                         Func<T, IList<TItem>> get,
                                         Action<T,TItem> insertAction,
-                                        Func<TItem, TItem, bool> shouldDelete = null)
+                                        Func<TItem, TItem, bool> shouldDelete = null,
+                                        Action<T,TItem> delete = null)
         {
             var path = new Path<T>
             {
                 Get = (t) => get(t)?.Cast<object>(),
                 Insert = (t, ti) => insertAction(t,(TItem)ti),
                 ShouldDelete = (s,t)=> shouldDelete?.Invoke((TItem)s,(TItem)t) ?? false,
+                Delete = (t,ti) => delete(t,(TItem)ti),
                 Type = typeof(TItem)
             };
 

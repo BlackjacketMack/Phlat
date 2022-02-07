@@ -28,7 +28,7 @@ namespace Phlatware
             return config;
         }
 
-        public IPhlatType GetPhlatType(Type type)
+        internal IPhlatType GetPhlatType(Type type)
         {
             if (!_typeRegistry.TryGetValue(type, out IPhlatType val))
                 throw new ApplicationException("The type you specified is not registerd.");
@@ -36,6 +36,6 @@ namespace Phlatware
             return val;
         }
 
-        public PhlatType<T> GetPhlatType<T>() => GetPhlatType(typeof(T)) as PhlatType<T>;
+        internal PhlatType<T> GetPhlatType<T>() => GetPhlatType(typeof(T)) as PhlatType<T>;
     }
 }

@@ -48,13 +48,13 @@ namespace Phlatware.Tests
         {
         }
 
-        private Foo _foo1;
-        private Foo _foo2;
+        private Foo _targetFoo;
+        private Foo _sourceFoo;
 
         [TestInitialize]
         public void Initting()
         {
-            _foo1 = new Foo
+            _targetFoo = new Foo
             {
                 Id = 1,
                 Name = "Foo be thy name",
@@ -66,7 +66,7 @@ namespace Phlatware.Tests
                 }
             };
 
-            _foo2 = new Foo
+            _sourceFoo = new Foo
             {
                 Id = 1,
                 Name = "Foo be thy new name",
@@ -85,7 +85,7 @@ namespace Phlatware.Tests
             {
                 t.Name = s.Name;
             })
-                .HasOne(m => m.Bar)
+                .HasOne(m => m.Bar, (s,t)=>s.Name == "DELETE ME")       //a little hacky, but we're saying if we name the Bar with "DELETE ME" 'ShouldDelete' will return true.  Used to test deleting. 
                 .HasMany(m => m.Bazzes, (s, t) => s == null);
 
             _config.Configure<Bar>((s, t) =>
@@ -106,7 +106,7 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestMerge()
         {
-            var result = _target.Merge(_foo2, _foo1);
+            var result = _target.Merge(_sourceFoo, _targetFoo);
 
             Console.WriteLine(result.ToString());
         }
@@ -114,9 +114,9 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestMerge_SinglePropAdded()
         {
-            _foo1.Bar = null;
+            _targetFoo.Bar = null;
 
-            var result = _target.Merge(_foo2, _foo1);
+            var result = _target.Merge(_sourceFoo, _targetFoo);
 
             Console.WriteLine(result);
             Assert.AreEqual("Bar be thy name", ((Bar)result[1].Model).Name);
@@ -125,9 +125,9 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestMerge_SingleProp()
         {
-            _foo2.Bar.Name = "A new name for bar...Cheers?";
+            _sourceFoo.Bar.Name = "A new name for bar...Cheers?";
 
-            var result = _target.Merge(_foo2, _foo1);
+            var result = _target.Merge(_sourceFoo, _targetFoo);
 
             Console.WriteLine(result);
             Assert.AreEqual("A new name for bar...Cheers?",((Bar)result[1].Model).Name);
@@ -136,12 +136,12 @@ namespace Phlatware.Tests
         [TestMethod]
         public void TestMerge_Deep()
         {
-            _foo2.Bazzes[1].Name = "Baz-a WAS thy name...from henceforth you shall be known as Bazzle.";
+            _sourceFoo.Bazzes[1].Name = "Baz-a WAS thy name...from henceforth you shall be known as Bazzle.";
 
-            var results = _target.Merge(_foo2, _foo1);
+            var results = _target.Merge(_sourceFoo, _targetFoo);
             Console.WriteLine(results.ToString());
 
-            var result = results.Single(r => r.Model == _foo1.Bazzes[1]);
+            var result = results.Single(r => r.Model == _targetFoo.Bazzes[1]);
             Assert.AreEqual(ResultStates.Updated,result.State);
             Assert.AreEqual("Baz-a WAS thy name...from henceforth you shall be known as Bazzle.",((Baz)result.Model).Name);
         }
@@ -151,9 +151,9 @@ namespace Phlatware.Tests
         {
             var newBaz = new Baz { Name = "The new Baz on the block." };
 
-            _foo2.Bazzes.Add(newBaz);
+            _sourceFoo.Bazzes.Add(newBaz);
 
-            var results = _target.Merge(_foo2, _foo1);
+            var results = _target.Merge(_sourceFoo, _targetFoo);
             Console.WriteLine(results);
 
             var newResult = results.Where(w => Object.ReferenceEquals(w.Model, newBaz)).Single();
@@ -164,13 +164,45 @@ namespace Phlatware.Tests
         public void TestMerge_DeleteRemoved()
         {
             //remove one from our target.  foo2 will have an extra one that should be marked as deleted.
-            _foo2.Bazzes.RemoveAt(0);
+            _sourceFoo.Bazzes.RemoveAt(0);
 
-            var result = _target.Merge(_foo2, _foo1);
+            var result = _target.Merge(_sourceFoo, _targetFoo);
 
             Console.WriteLine(result.ToString());
 
             Assert.AreEqual(ResultStates.Deleted,result[3].State);
+        }
+
+        [TestMethod]
+        public void TestMerge_DeleteFromListRemovesItemFromTarget()
+        {
+            //change the default from case-insensitive to case-sensitive
+            var target = new Phlat(_config);
+
+            //remove an item from _foo2 and it should be removed from _foo1.
+            _sourceFoo.Bazzes.RemoveAt(0);
+
+            var results = _target.Merge(_sourceFoo, _targetFoo);
+
+            Console.Write(results);
+
+            Assert.IsFalse(_targetFoo.Bazzes.Where(baz => baz.Id == 3).Any());
+        }
+
+        [TestMethod]
+        public void TestMerge_DeletePropertySetsToDefaultOnTarget()
+        {
+            //change the default from case-insensitive to case-sensitive
+            var target = new Phlat(_config);
+
+            //remove an item from _foo2 and it should be removed from _foo1.
+            _sourceFoo.Bar.Name = "DELETE ME";
+
+            var results = _target.Merge(_sourceFoo, _targetFoo);
+
+            Console.Write(results);
+
+            Assert.IsNull(_targetFoo.Bar);
         }
 
         private class CustomComparerByName : IEqualityComparer<Foo>
@@ -192,9 +224,11 @@ namespace Phlatware.Tests
             //change the default from case-insensitive to case-sensitive
             var target = new Phlat(_config);
 
-            var results = target.Flatten(_foo1);
+            var results = target.Flatten(_targetFoo);
 
             Assert.IsTrue(results.RootResult.Values.ContainsKey("id"));
         }
+
+        
     }
 }

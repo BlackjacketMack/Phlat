@@ -10,8 +10,9 @@ namespace Phlatware
     /// <typeparam name="T"></typeparam>
     internal class Path<T> : IPath
     {
-        Func<object, IEnumerable<object>> IPath.Get { get => o => Get((T)o); }
-        Action<object, object> IPath.Insert { get => (t, obj) => Insert((T)t, obj); }
+        Func<object, IEnumerable<object>> IPath.Get => o => Get((T)o);
+        Action<object, object> IPath.Insert => (t, obj) => Insert((T)t, obj);
+        Action<object, object> IPath.Delete => (t,ti) => Delete((T)t,ti);
 
         /// <summary>
         /// Get one or more models from T
@@ -33,9 +34,9 @@ namespace Phlatware
         /// </summary>
         public Func<object, object, bool> ShouldDelete { get; set; }
 
+        public Action<T,object> Delete { get; set; }
+
         public Type Type { get; set; }
 
-
-        
     }
 }
