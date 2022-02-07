@@ -32,11 +32,19 @@ namespace Phlatware
         /// If you want to delete based on a state property, you can do that too.
         /// (s,t)=>s.IsDeleted
         /// </summary>
-        public Func<object, object, bool> ShouldDelete { get; set; }
+        public Func<object, object, bool> DeleteIf { get; set; }
 
+        /// <summary>
+        /// Action to perform if the item should be deleted.
+        /// For single properties this sets the item to default.
+        /// For lists this removes the item from the list.
+        /// </summary>
         public Action<T,object> Delete { get; set; }
 
-        public Type Type { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Type ItemType { get; set; }
 
     }
 }

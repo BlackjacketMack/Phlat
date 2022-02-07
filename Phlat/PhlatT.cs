@@ -148,7 +148,7 @@ namespace Phlatware
                 
                 //if this is the root result it should be passed through the update routing.
                 //otherwise, if it is a sub-item check if we should delete it.
-                else if(sourceResult.IsRoot || !path.ShouldDelete(sourceResult?.Model, targetResult.Model))
+                else if(sourceResult.IsRoot || !path.DeleteIf(sourceResult?.Model, targetResult.Model))
                 {
                     var snapshot = sourcePhlatType.CreateSnapshot(targetResult.Model);
                     var startValues = snapshot.Values();
@@ -179,7 +179,7 @@ namespace Phlatware
 
                 var sourceResult = sourceResults.Where(lr => Object.Equals(targetResult.Model, lr.Model)).SingleOrDefault();
 
-                if (path.ShouldDelete(sourceResult?.Model, targetResult.Model))
+                if (path.DeleteIf(sourceResult?.Model, targetResult.Model))
                 {
                     //append result
                     var targetPhlatType = _configuration.GetPhlatType(targetResult.Type);

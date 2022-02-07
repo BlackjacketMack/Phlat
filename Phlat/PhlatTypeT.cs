@@ -52,11 +52,11 @@ namespace Phlatware
         /// </summary>
         public PhlatType<T> HasMany<TItem>(
                                         Func<T, IList<TItem>> get,
-                                        Func<TItem, TItem, bool> shouldDelete = null)
+                                        Func<TItem, TItem, bool> deleteIf = null)
         {
             addPath(get,
                     (t,ti)=>get(t).Add(ti),
-                    shouldDelete,
+                    deleteIf,
                     (t,ti)=>get(t).Remove(ti));
 
             return this;
@@ -72,9 +72,9 @@ namespace Phlatware
             {
                 Get = (t) => get(t)?.Cast<object>(),
                 Insert = (t, ti) => insertAction(t,(TItem)ti),
-                ShouldDelete = (s,t)=> shouldDelete?.Invoke((TItem)s,(TItem)t) ?? false,
+                DeleteIf = (s,t)=> shouldDelete?.Invoke((TItem)s,(TItem)t) ?? false,
                 Delete = (t,ti) => delete(t,(TItem)ti),
-                Type = typeof(TItem)
+                ItemType = typeof(TItem)
             };
 
             Paths.Add(path);

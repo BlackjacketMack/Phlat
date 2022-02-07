@@ -28,7 +28,7 @@ namespace Phlatware
         /// If you want to delete based on a state property, you can do that too.
         /// (s,t)=>s.IsDeleted
         /// </summary>
-        Func<object, object, bool> ShouldDelete { get;  }
+        Func<object, object, bool> DeleteIf { get;  }
 
 
         /// <summary>
@@ -38,6 +38,6 @@ namespace Phlatware
         /// </summary>
         Action<object, object> Delete { get; }
 
-        Type Type { get; }
+        Type ItemType { get; }
     }
 }

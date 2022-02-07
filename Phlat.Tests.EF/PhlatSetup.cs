@@ -12,7 +12,7 @@ namespace Phlatware.Tests.EF
             })
             .HasMany(
                 b => b.Posts,                                       //define the path
-                shouldDelete:(s,t)=>s == null                             //indicate that if a source item is missing (null) it should be flagged as deleted
+                deleteIf:(s,t)=>s == default                             //indicate that if a source item is missing (null) it should be flagged as deleted
             );                                         
 
             config.Configure<Post>((s, t) =>
