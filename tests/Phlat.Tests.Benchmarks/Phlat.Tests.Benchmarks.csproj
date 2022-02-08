@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Phlat.Tests\Phlat.Tests.csproj" />
-    <ProjectReference Include="..\Phlat\Phlat.csproj" />
   </ItemGroup>
 
   <ItemGroup>
