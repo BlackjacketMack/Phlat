@@ -10,7 +10,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    working-directory: ./src
+    env:
+        working-directory: ./src
 
     steps:
     - uses: actions/checkout@v2
