@@ -8,21 +8,20 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3AC5D65E-EB53-404E-87B4-1AA144880308}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1CC1AD3C-73C8-47DE-9020-0CEB956462FF}"
-	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{F19D6797-79F9-4174-A51C-2926C279BC94}"
-	ProjectSection(SolutionItems) = preProject
-		docs\EF.md = docs\EF.md
-		docs\README-Data.md = docs\README-Data.md
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phlat.Tests", "..\tests\Phlat.Tests\Phlat.Tests.csproj", "{B4794EDB-EF7D-44B0-9562-EDCD845B346F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phlat.Tests.Benchmarks", "..\tests\Phlat.Tests.Benchmarks\Phlat.Tests.Benchmarks.csproj", "{7D73586F-1842-4E2F-BB92-F05ED8506E1E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phlat.Tests.EF", "..\tests\Phlat.Tests.EF\Phlat.Tests.EF.csproj", "{FA9C0E19-ABEE-4FF2-9C40-0341CA8959A1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{190B9DEF-D43A-4AF6-B5FA-C8C63B268FB6}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\EF.md = ..\docs\EF.md
+		..\docs\Phlat1.png = ..\docs\Phlat1.png
+		..\docs\README-Data.md = ..\docs\README-Data.md
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,7 +50,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F19D6797-79F9-4174-A51C-2926C279BC94} = {1CC1AD3C-73C8-47DE-9020-0CEB956462FF}
 		{B4794EDB-EF7D-44B0-9562-EDCD845B346F} = {3AC5D65E-EB53-404E-87B4-1AA144880308}
 		{7D73586F-1842-4E2F-BB92-F05ED8506E1E} = {3AC5D65E-EB53-404E-87B4-1AA144880308}
 		{FA9C0E19-ABEE-4FF2-9C40-0341CA8959A1} = {3AC5D65E-EB53-404E-87B4-1AA144880308}

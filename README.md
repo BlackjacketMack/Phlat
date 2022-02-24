@@ -23,6 +23,18 @@ The examples on this page use a simple Person/Address structure with some prepop
 Flatten exists as a descriptive function that can be used for diagnostic purposes.  
 (Note that it is the basis for our merge method outlined below.)
 
+![Simple object](./docs/Phlat1.png)
+
+Becomes...
+
+| Path | Model | Values | 
+| ------ | ----- | ------ |
+| [ROOT] | Person 1 | [Name, Stanley],[Age, 29],[Id, 1] |
+| [ROOT].Addresses | Address 1 | [Street, Lombard Street],[City, San Francisco],[State, California],[IsShipping, False],[Id, 1] |
+| [ROOT].Addresses | Address 2 | [Street, Hollywood Boulevard],[City, Hollywood],[State, California],[IsShipping, True],[Id, 2] |
+
+
+
 **Create a configuration**
 
 Configurations can be defined for each aggregate root, or they can be defined once per application.
